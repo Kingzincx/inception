@@ -13,4 +13,8 @@ if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
     -subj "/CN=${DOMAIN_NAME}"
 fi
 
+# substitui variáveis no template de configuração
+envsubst '$DOMAIN_NAME' < /etc/nginx/nginx.conf > /tmp/nginx.conf
+mv /tmp/nginx.conf /etc/nginx/nginx.conf
+
 exec "$@"
