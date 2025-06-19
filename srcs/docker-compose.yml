@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  mariadb:
+    build: requirements/mariadb
+    restart: always
+    env_file: .env
+    secrets:
+      - db_password
+      - db_root_password
+    volumes:
+      - type: bind
+        source: /home/${USER}/data/mariadb
+        target: /var/lib/mysql
+    networks: [intra]
+
+  wordpress:
+    build: requirements/wordpress
+    restart: always
+    env_file: .env
+    depends_on: [mariadb]
+    secrets:
+      - db_password
+    volumes:
+      - type: bind
+        source: /home/${USER}/data/wordpress
+        target: /var/www/wordpress
+    networks: [intra]
+
+  nginx:
+    build: requirements/nginx
+    restart: always
+    env_file: .env
+    depends_on: [wordpress]
+    ports:
+      - "443:443"
+    volumes:
+      - type: bind
+        source: /home/${USER}/data/wordpress
+        target: /var/www/wordpress
+    networks: [intra]
+
+networks:
+  intra: {}
+
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
