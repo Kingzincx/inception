@@ -1,6 +1,6 @@
+LOGIN ?= $(shell id -un)
 COMPOSE = docker compose -f srcs/docker-compose.yml
 
-# alvo padrão: constrói e sobe
 .DEFAULT_GOAL := all
 all: build up
 
@@ -14,7 +14,8 @@ down:
 	$(COMPOSE) down
 
 fclean: down
-	rm -rf ~/data/mariadb ~/data/wordpress
+	 rm -rf /home/$(LOGIN)/data/mariadb /home/$(LOGIN)/data/wordpress
 
 re: fclean build up
+
 .PHONY: all build up down fclean re
