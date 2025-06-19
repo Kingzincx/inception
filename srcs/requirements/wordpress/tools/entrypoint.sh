@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+if [ -z "${WP_ADMIN_PASSWORD_FILE}" ] || [ ! -f "${WP_ADMIN_PASSWORD_FILE}" ]; then
+    echo "WP_ADMIN_PASSWORD_FILE not set or file missing" >&2
+    exit 1
+fi
+
 # cria wp-config.php se não existir
 if [ ! -f "wp-config.php" ]; then
     wp config create \
@@ -13,12 +18,13 @@ if [ ! -f "wp-config.php" ]; then
     wp core install \
         --url="https://${DOMAIN_NAME}" \
         --title="Inception WP" \
-        --admin_user="admin" \
-        --admin_password="Admin#2025" \
-        --admin_email="admin@example.com" --skip-email --quiet
+        --admin_user="${WP_ADMIN_USER}" \
+        --admin_password="$(cat ${WP_ADMIN_PASSWORD_FILE})" \
+        --admin_email="${WP_ADMIN_EMAIL}" --skip-email --quiet
 
-    # cria conta autor
-    wp user create autor autor@example.com --role=author --user_pass="Autor#2025" --quiet
+    if [ -n "${WP_AUTHOR_USER}" ] && [ -n "${WP_AUTHOR_PASSWORD_FILE}" ] && [ -n "${WP_AUTHOR_EMAIL}" ]; then
+        wp user create "${WP_AUTHOR_USER}" "${WP_AUTHOR_EMAIL}" --role=author --user_pass="$(cat ${WP_AUTHOR_PASSWORD_FILE})" --quiet
+    fi
 fi
 
 # garante permissões corretas
