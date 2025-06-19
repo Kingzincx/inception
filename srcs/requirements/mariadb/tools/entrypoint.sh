@@ -15,8 +15,10 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
     done
 
     mysql --socket=/run/mysqld/mysqld.sock <<-EOSQL
-        SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$(cat ${MYSQL_ROOT_PASSWORD_FILE})');
+        ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat ${MYSQL_ROOT_PASSWORD_FILE})';
         DELETE FROM mysql.user WHERE User='';
+        DROP DATABASE IF EXISTS test;
+        DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
         CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
         CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '$(cat ${MYSQL_PASSWORD_FILE})';
         GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';

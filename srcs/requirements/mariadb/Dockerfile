@@ -5,6 +5,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends mariadb-server procps && \
     rm -rf /var/lib/apt/lists/*
 
+COPY conf/my.cnf /etc/mysql/conf.d/
+
 COPY tools/entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
