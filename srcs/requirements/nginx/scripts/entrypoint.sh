@@ -1,20 +1,22 @@
 #!/bin/sh
 set -e
 
-CERT_DIR=/etc/nginx/ssl
-mkdir -p "$CERT_DIR"
+# Cria o diretório SSL se não existir
+mkdir -p /etc/nginx/ssl
 
-# gera certificado auto-assinado se não existir
-if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
-  openssl req -x509 -nodes -days 365 \
-    -newkey rsa:4096 \
-    -keyout "$CERT_DIR/key.pem" \
-    -out "$CERT_DIR/fullchain.pem" \
-    -subj "/CN=${DOMAIN_NAME}"
+# Gera o certificado autoassinado apenas se não existir
+if [ ! -f /etc/nginx/ssl/fullchain.pem ]; then
+    echo "Gerando certificado SSL autoassinado..."
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /etc/nginx/ssl/key.pem \
+        -out /etc/nginx/ssl/fullchain.pem \
+        -subj "/C=PT/ST=Lisbon/L=Lisbon/O=42/OU=Student/CN=${DOMAIN_NAME}"
 fi
 
-# substitui variáveis no template de configuração
-envsubst '$DOMAIN_NAME' < /etc/nginx/nginx.conf > /tmp/nginx.conf
-mv /tmp/nginx.conf /etc/nginx/nginx.conf
+# Substitui a variável de ambiente no ficheiro de configuração do Nginx
+# Corrigido para usar a sintaxe correta da variável
+echo "Configurando o Nginx..."
+envsubst '${DOMAIN_NAME}' < /etc/nginx/nginx.conf > /tmp/nginx.conf && mv /tmp/nginx.conf /etc/nginx/nginx.conf
 
+# Passa o controlo para o comando principal (o CMD do Dockerfile)
 exec "$@"

@@ -1,56 +1,67 @@
-version: "3.9"
+version: '3.8'
 
 services:
   mariadb:
-    build: requirements/mariadb
-    restart: always
+    build:
+      context: ./requirements/mariadb
+    container_name: mariadb
     env_file: .env
     secrets:
-      - db_password
-      - db_root_password
+      - mariadb_root_password
+      - mariadb_password
     volumes:
-      - type: bind
-        source: /home/${LOGIN}/data/mariadb
-        target: /var/lib/mysql
-    networks: [intra]
+      - db_data:/var/lib/mysql
+    networks:
+      - intra
+    restart: always
 
   wordpress:
-    build: requirements/wordpress
-    restart: always
+    build:
+      context: ./requirements/wordpress
+    container_name: wordpress
     env_file: .env
-    depends_on: [mariadb]
     secrets:
-      - db_password
-      - wp_admin_password
-      - wp_author_password
+      - mariadb_password
     volumes:
-      - type: bind
-        source: /home/${LOGIN}/data/wordpress
-        target: /var/www/wordpress
-    networks: [intra]
+      - wp_files:/var/www/wordpress
+    networks:
+      - intra
+    depends_on:
+      - mariadb
+    restart: always
 
   nginx:
-    build: requirements/nginx
-    restart: always
+    build:
+      context: ./requirements/nginx
+    container_name: nginx
     env_file: .env
-    depends_on: [wordpress]
     ports:
       - "443:443"
     volumes:
-      - type: bind
-        source: /home/${LOGIN}/data/wordpress
-        target: /var/www/wordpress
-    networks: [intra]
+      - wp_files:/var/www/wordpress
+    networks:
+      - intra
+    depends_on:
+      - wordpress
+    restart: always
 
 networks:
   intra: {}
 
+volumes:
+  db_data:
+    driver_opts:
+      type: none
+      device: /home/jcamuenh/data/mariadb
+      o: bind
+  wp_files:
+    driver_opts:
+      type: none
+      device: /home/jcamuenh/data/wordpress
+      o: bind
+
 secrets:
-  db_password:
-    file: ../secrets/db_password.txt
-  db_root_password:
-    file: ../secrets/db_root_password.txt
-  wp_admin_password:
-    file: ../secrets/wp_admin_password.txt
-  wp_author_password:
-    file: ../secrets/wp_author_password.txt
+  mariadb_root_password:
+    file: ./requirements/mariadb/secrets/mariadb_root_password.txt
+  mariadb_password:
+    file: ./requirements/mariadb/secrets/mariadb_password.txt

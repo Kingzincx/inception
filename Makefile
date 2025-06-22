@@ -1,21 +1,23 @@
-LOGIN ?= $(shell id -un)
-COMPOSE = docker compose -f srcs/docker-compose.yml
+COMPOSE_FILE = srcs/docker-compose.yml
 
-.DEFAULT_GOAL := all
 all: build up
 
 build:
-	$(COMPOSE) build
+    @echo "A construir as imagens Docker..."
+    docker-compose -f $(COMPOSE_FILE) build
 
 up:
-	$(COMPOSE) up -d
+    @echo "A iniciar os serviços..."
+    docker-compose -f $(COMPOSE_FILE) up -d
 
 down:
-	$(COMPOSE) down
+    @echo "A parar os serviços..."
+    docker-compose -f $(COMPOSE_FILE) down
 
-fclean: down
-	 rm -rf /home/$(LOGIN)/data/mariadb /home/$(LOGIN)/data/wordpress
+clean:
+    @echo "A parar e a remover contentores, redes e volumes..."
+    docker-compose -f $(COMPOSE_FILE) down -v --rmi all --remove-orphans
 
-re: fclean build up
+re: clean all
 
-.PHONY: all build up down fclean re
+.PHONY: all build up down clean re

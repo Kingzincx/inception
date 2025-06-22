@@ -1,5 +1,4 @@
-ARG DEBIAN_VERSION=bullseye
-FROM debian:${DEBIAN_VERSION}-slim
+FROM debian:bullseye-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends mariadb-server procps && \
